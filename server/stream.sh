@@ -5,7 +5,8 @@
 set -e
 
 # Configuration
-DISPLAY_NUM=99
+DISPLAY_NUM=98
+SINK_NAME="twitch_speaker"
 RESOLUTION="1280x720"
 FPS=24
 TWITCH_URL="rtmp://live.twitch.tv/app"
@@ -20,13 +21,12 @@ fi
 echo "Starting Lofi Stream to Twitch..."
 echo "Resolution: $RESOLUTION @ ${FPS}fps"
 
-# Cleanup any existing processes
+# Cleanup any existing processes (don't kill pulseaudio - shared with YouTube stream)
 cleanup() {
     echo "Cleaning up..."
     pkill -f "Xvfb :$DISPLAY_NUM" 2>/dev/null || true
     pkill -f "chromium.*lofi-stream-twitch" 2>/dev/null || true
     pkill -f "ffmpeg.*twitch" 2>/dev/null || true
-    pulseaudio --kill 2>/dev/null || true
 }
 
 trap cleanup EXIT
@@ -40,15 +40,16 @@ XVFB_PID=$!
 sleep 2
 export DISPLAY=:$DISPLAY_NUM
 
-# Start PulseAudio
-echo "Starting PulseAudio..."
+# PulseAudio setup (shared with YouTube stream - don't start/stop)
+echo "Setting up PulseAudio sink..."
 export XDG_RUNTIME_DIR=/run/user/$(id -u)
 mkdir -p $XDG_RUNTIME_DIR
-pulseaudio --start --exit-idle-time=-1
 
-# Create virtual audio sink
-pactl load-module module-null-sink sink_name=virtual_speaker sink_properties=device.description=VirtualSpeaker
-pactl set-default-sink virtual_speaker
+# Ensure PulseAudio is running
+pulseaudio --check || pulseaudio --start --exit-idle-time=-1
+
+# Create our own virtual audio sink (don't set as default - YouTube uses its own)
+pactl load-module module-null-sink sink_name=$SINK_NAME sink_properties=device.description=TwitchSpeaker 2>/dev/null || true
 
 # Export PULSE_SERVER for ffmpeg (critical for audio capture!)
 export PULSE_SERVER=unix:$XDG_RUNTIME_DIR/pulse/native
@@ -80,8 +81,18 @@ sleep 1
 xdotool mousemove 640 360 click 1
 sleep 2
 
-# Move Chromium audio to virtual speaker
-pactl list short sink-inputs | awk '{print $1}' | xargs -I {} pactl move-sink-input {} virtual_speaker 2>/dev/null || true
+# Move THIS Chromium's audio to our twitch sink (find by PID)
+sleep 1
+SINK_INPUT=$(pactl list sink-inputs | grep -B 20 "application.process.id = \"$CHROME_PID\"" | grep "Sink Input" | grep -oP '#\K\d+' | tail -1)
+if [ -n "$SINK_INPUT" ]; then
+    pactl move-sink-input $SINK_INPUT $SINK_NAME
+    echo "Moved Chromium (PID $CHROME_PID) to $SINK_NAME"
+else
+    echo "Warning: Could not find sink input for Chromium PID $CHROME_PID"
+    # Fallback: try to move most recent sink input
+    LATEST_INPUT=$(pactl list short sink-inputs | tail -1 | awk '{print $1}')
+    [ -n "$LATEST_INPUT" ] && pactl move-sink-input $LATEST_INPUT $SINK_NAME 2>/dev/null || true
+fi
 
 # Start FFmpeg streaming to Twitch
 echo "Starting FFmpeg stream to Twitch..."
@@ -94,7 +105,7 @@ PULSE_SERVER=unix:$XDG_RUNTIME_DIR/pulse/native ffmpeg \
     -i :$DISPLAY_NUM \
     -thread_queue_size 1024 \
     -f pulse \
-    -i virtual_speaker.monitor \
+    -i ${SINK_NAME}.monitor \
     -c:v libx264 \
     -preset ultrafast \
     -tune zerolatency \
