@@ -38,6 +38,7 @@ The project is complete when:
 ```
 lofi-stream-twitch/
 ├── CLAUDE.md              # This file
+├── Makefile               # Dev server deploy/cleanup
 ├── docs/                  # GitHub Pages lofi site
 │   ├── index.html         # Coffee shop visuals + Web Audio API
 │   └── style.css          # Warm amber styling
@@ -90,6 +91,34 @@ top -bn1 | head -15 && free -h
 # Take screenshot of Twitch display
 ffmpeg -y -f x11grab -video_size 1280x720 -i :98 -frames:v 1 -update 1 /tmp/twitch_screenshot.png
 ```
+
+## Dev Server (Testing)
+
+Use the dev server (5.78.42.22 as `lofidev` user) to test changes before deploying to production.
+
+```bash
+# Deploy this repo to dev server
+make deploy-dev
+
+# Check what's deployed
+make dev-status
+
+# Clean up when done testing
+make cleanup-dev
+
+# Full dev server reset (kills all processes, cleans home dir)
+make dev-reset
+
+# View reset logs
+make dev-logs
+```
+
+**When to use dev server:**
+- Testing changes to `docs/` (the lofi page)
+- Testing changes to `server/` scripts
+- Debugging stream issues without affecting production
+
+**Dev server resets daily at 4 AM UTC** - any deployments will be cleaned up automatically.
 
 ## Current Status
 
