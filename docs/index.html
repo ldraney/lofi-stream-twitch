@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>lofi coffee shop</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="rain-window"></div>
+
+  <div class="coffee-shop">
+    <!-- Bookshelf -->
+    <div class="bookshelf">
+      <div class="shelf">
+        <div class="book b1"></div>
+        <div class="book b2"></div>
+        <div class="book b3"></div>
+        <div class="book b4"></div>
+        <div class="book b5"></div>
+      </div>
+      <div class="shelf">
+        <div class="book b6"></div>
+        <div class="book b7"></div>
+        <div class="book b8"></div>
+        <div class="book b9"></div>
+      </div>
+    </div>
+
+    <!-- Window with rain -->
+    <div class="window">
+      <div class="window-frame">
+        <div class="rain-outside"></div>
+        <div class="street-lamp"></div>
+      </div>
+    </div>
+
+    <!-- Desk area -->
+    <div class="desk">
+      <div class="laptop">
+        <div class="screen">
+          <div class="code-lines"></div>
+        </div>
+        <div class="keyboard"></div>
+      </div>
+      <div class="coffee-mug">
+        <div class="steam s1"></div>
+        <div class="steam s2"></div>
+        <div class="steam s3"></div>
+      </div>
+      <div class="candle">
+        <div class="flame"></div>
+      </div>
+    </div>
+
+    <!-- Cat -->
+    <div class="cat">
+      <div class="cat-body"></div>
+      <div class="cat-head">
+        <div class="ear left"></div>
+        <div class="ear right"></div>
+        <div class="cat-face"></div>
+      </div>
+      <div class="cat-tail"></div>
+    </div>
+
+    <!-- Hanging plant -->
+    <div class="hanging-plant">
+      <div class="pot"></div>
+      <div class="vine v1"></div>
+      <div class="vine v2"></div>
+      <div class="vine v3"></div>
+    </div>
+  </div>
+
+  <div class="info">
+    <div class="title">cozy coffee shop vibes</div>
+    <div class="equalizer">
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+  </div>
+
+  <script>
+    // Generate rain on window
+    const rainWindow = document.querySelector('.rain-outside');
+    for (let i = 0; i < 60; i++) {
+      const drop = document.createElement('div');
+      drop.className = 'drop';
+      drop.style.left = Math.random() * 100 + '%';
+      drop.style.animationDuration = (Math.random() * 0.4 + 0.3) + 's';
+      drop.style.animationDelay = Math.random() * 2 + 's';
+      rainWindow.appendChild(drop);
+    }
+
+    // Animate code lines on laptop
+    const codeLines = document.querySelector('.code-lines');
+    for (let i = 0; i < 8; i++) {
+      const line = document.createElement('div');
+      line.className = 'code-line';
+      line.style.width = (30 + Math.random() * 50) + '%';
+      line.style.animationDelay = (i * 0.3) + 's';
+      codeLines.appendChild(line);
+    }
+
+    // Web Audio API - Coffee Shop Jazz Lofi
+    let audioStarted = false;
+
+    function startAudio() {
+      if (audioStarted) return;
+      audioStarted = true;
+
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const masterGain = ctx.createGain();
+      masterGain.gain.value = 0.25;
+      masterGain.connect(ctx.destination);
+
+      // Soft rain/cafe ambience - pink noise
+      const noiseBuffer = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
+      const noiseData = noiseBuffer.getChannelData(0);
+      let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+      for (let i = 0; i < noiseBuffer.length; i++) {
+        const white = Math.random() * 2 - 1;
+        b0 = 0.99886 * b0 + white * 0.0555179;
+        b1 = 0.99332 * b1 + white * 0.0750759;
+        b2 = 0.96900 * b2 + white * 0.1538520;
+        b3 = 0.86650 * b3 + white * 0.3104856;
+        b4 = 0.55000 * b4 + white * 0.5329522;
+        b5 = -0.7616 * b5 - white * 0.0168980;
+        noiseData[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.11;
+        b6 = white * 0.115926;
+      }
+
+      const noise = ctx.createBufferSource();
+      noise.buffer = noiseBuffer;
+      noise.loop = true;
+      const noiseFilter = ctx.createBiquadFilter();
+      noiseFilter.type = 'lowpass';
+      noiseFilter.frequency.value = 600;
+      const noiseGain = ctx.createGain();
+      noiseGain.gain.value = 0.12;
+      noise.connect(noiseFilter);
+      noiseFilter.connect(noiseGain);
+      noiseGain.connect(masterGain);
+      noise.start();
+
+      // Jazz-style chord progression (7th chords)
+      const chords = [
+        [261.63, 329.63, 392.00, 493.88], // Cmaj7
+        [220.00, 261.63, 329.63, 415.30], // Am7
+        [293.66, 369.99, 440.00, 523.25], // Dm7
+        [392.00, 493.88, 587.33, 698.46], // G7
+      ];
+
+      function playJazzChord(freqs, startTime, duration) {
+        freqs.forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          // Mix of sine and triangle for warmth
+          osc.type = idx % 2 === 0 ? 'sine' : 'triangle';
+          osc.frequency.value = freq * 0.5; // One octave down
+
+          const oscGain = ctx.createGain();
+          const filter = ctx.createBiquadFilter();
+          filter.type = 'lowpass';
+          filter.frequency.value = 600;
+
+          osc.connect(filter);
+          filter.connect(oscGain);
+          oscGain.connect(masterGain);
+
+          // Soft attack, long release
+          oscGain.gain.setValueAtTime(0, startTime);
+          oscGain.gain.linearRampToValueAtTime(0.06, startTime + 0.8);
+          oscGain.gain.linearRampToValueAtTime(0.04, startTime + duration - 1);
+          oscGain.gain.linearRampToValueAtTime(0, startTime + duration);
+
+          osc.start(startTime);
+          osc.stop(startTime + duration);
+        });
+      }
+
+      function scheduleChords() {
+        const now = ctx.currentTime;
+        const chordDuration = 5; // Slower, more relaxed
+        chords.forEach((chord, i) => {
+          playJazzChord(chord, now + i * chordDuration, chordDuration);
+        });
+        setTimeout(scheduleChords, chords.length * chordDuration * 1000);
+      }
+      scheduleChords();
+
+      // Warm bass line
+      const bassNotes = [65.41, 55.00, 73.42, 98.00]; // C2, A1, D2, G2
+      let bassIndex = 0;
+
+      function playBass() {
+        const osc = ctx.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.value = bassNotes[bassIndex];
+        bassIndex = (bassIndex + 1) % bassNotes.length;
+
+        const bassGain = ctx.createGain();
+        const bassFilter = ctx.createBiquadFilter();
+        bassFilter.type = 'lowpass';
+        bassFilter.frequency.value = 150;
+
+        osc.connect(bassFilter);
+        bassFilter.connect(bassGain);
+        bassGain.connect(masterGain);
+
+        const now = ctx.currentTime;
+        bassGain.gain.setValueAtTime(0, now);
+        bassGain.gain.linearRampToValueAtTime(0.12, now + 0.1);
+        bassGain.gain.linearRampToValueAtTime(0.08, now + 4);
+        bassGain.gain.linearRampToValueAtTime(0, now + 5);
+
+        osc.start(now);
+        osc.stop(now + 5);
+
+        setTimeout(playBass, 5000);
+      }
+      playBass();
+
+      // Coffee shop chatter (very subtle filtered noise bursts)
+      function playCafeAmbience() {
+        const chatterBuffer = ctx.createBuffer(1, ctx.sampleRate * 0.5, ctx.sampleRate);
+        const chatterData = chatterBuffer.getChannelData(0);
+        for (let i = 0; i < chatterBuffer.length; i++) {
+          chatterData[i] = (Math.random() * 2 - 1) * 0.3;
+        }
+
+        const chatter = ctx.createBufferSource();
+        chatter.buffer = chatterBuffer;
+
+        const chatterFilter = ctx.createBiquadFilter();
+        chatterFilter.type = 'bandpass';
+        chatterFilter.frequency.value = 400;
+        chatterFilter.Q.value = 2;
+
+        const chatterGain = ctx.createGain();
+        const now = ctx.currentTime;
+        chatterGain.gain.setValueAtTime(0, now);
+        chatterGain.gain.linearRampToValueAtTime(0.015, now + 0.1);
+        chatterGain.gain.linearRampToValueAtTime(0, now + 0.4);
+
+        chatter.connect(chatterFilter);
+        chatterFilter.connect(chatterGain);
+        chatterGain.connect(masterGain);
+        chatter.start();
+
+        // Random interval for next chatter
+        setTimeout(playCafeAmbience, 3000 + Math.random() * 5000);
+      }
+      setTimeout(playCafeAmbience, 2000);
+
+      // Vinyl crackle
+      const crackleBuffer = ctx.createBuffer(1, ctx.sampleRate * 4, ctx.sampleRate);
+      const crackleData = crackleBuffer.getChannelData(0);
+      for (let i = 0; i < crackleBuffer.length; i++) {
+        crackleData[i] = Math.random() > 0.99 ? (Math.random() * 0.4 - 0.2) : 0;
+      }
+      const crackle = ctx.createBufferSource();
+      crackle.buffer = crackleBuffer;
+      crackle.loop = true;
+      const crackleGain = ctx.createGain();
+      crackleGain.gain.value = 0.2;
+      crackle.connect(crackleGain);
+      crackleGain.connect(masterGain);
+      crackle.start();
+
+      console.log('Coffee shop lofi audio started');
+    }
+
+    // Auto-start for streaming
+    document.addEventListener('click', startAudio, { once: true });
+    document.addEventListener('keydown', startAudio, { once: true });
+
+    setTimeout(() => {
+      startAudio();
+    }, 1000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,500 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: linear-gradient(135deg, #2d1810 0%, #3d2317 50%, #1a0f0a 100%);
+  min-height: 100vh;
+  overflow: hidden;
+  font-family: 'Courier New', monospace;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Rain on window effect (background) */
+.rain-window {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.3;
+}
+
+/* Coffee shop container */
+.coffee-shop {
+  position: relative;
+  width: 800px;
+  height: 500px;
+  background: linear-gradient(180deg, #4a3228 0%, #3d2820 50%, #2d1a14 100%);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+/* Bookshelf */
+.bookshelf {
+  position: absolute;
+  top: 20px;
+  left: 30px;
+  width: 150px;
+}
+
+.shelf {
+  height: 60px;
+  background: #5a3d2e;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: flex-end;
+  padding: 5px;
+  gap: 4px;
+  box-shadow: 0 3px 0 #3d2820;
+}
+
+.book {
+  border-radius: 2px 2px 0 0;
+}
+
+.b1 { width: 15px; height: 45px; background: #8b4513; }
+.b2 { width: 12px; height: 40px; background: #2e5a4a; }
+.b3 { width: 18px; height: 48px; background: #5a2e2e; }
+.b4 { width: 10px; height: 35px; background: #4a5a2e; }
+.b5 { width: 14px; height: 42px; background: #2e4a5a; }
+.b6 { width: 16px; height: 44px; background: #5a4a2e; }
+.b7 { width: 12px; height: 38px; background: #3d5a5a; }
+.b8 { width: 14px; height: 46px; background: #5a2e4a; }
+.b9 { width: 18px; height: 50px; background: #6b4423; }
+
+/* Window */
+.window {
+  position: absolute;
+  top: 30px;
+  right: 40px;
+  width: 200px;
+  height: 180px;
+}
+
+.window-frame {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, #1a2a3a 0%, #0d1a2a 100%);
+  border: 12px solid #5a3d2e;
+  border-radius: 5px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5);
+}
+
+/* Cross pattern on window */
+.window-frame::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 8px;
+  background: #5a3d2e;
+  transform: translateY(-50%);
+  z-index: 5;
+}
+
+.window-frame::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 8px;
+  height: 100%;
+  background: #5a3d2e;
+  transform: translateX(-50%);
+  z-index: 5;
+}
+
+/* Rain outside window */
+.rain-outside {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+}
+
+.drop {
+  position: absolute;
+  top: -10px;
+  width: 1px;
+  height: 12px;
+  background: linear-gradient(transparent, rgba(150, 180, 200, 0.6));
+  animation: rain-fall linear infinite;
+}
+
+@keyframes rain-fall {
+  to {
+    transform: translateY(200px);
+  }
+}
+
+/* Street lamp glow outside */
+.street-lamp {
+  position: absolute;
+  bottom: 20px;
+  right: 30px;
+  width: 20px;
+  height: 20px;
+  background: #ffcc66;
+  border-radius: 50%;
+  box-shadow: 0 0 30px rgba(255, 200, 100, 0.8),
+              0 0 60px rgba(255, 200, 100, 0.4);
+  animation: lamp-flicker 4s ease-in-out infinite;
+  z-index: 3;
+}
+
+@keyframes lamp-flicker {
+  0%, 100% { opacity: 0.9; }
+  50% { opacity: 1; }
+  52% { opacity: 0.85; }
+  54% { opacity: 1; }
+}
+
+/* Desk */
+.desk {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 500px;
+  height: 180px;
+  background: linear-gradient(180deg, #6b4423 0%, #5a3a1e 100%);
+  border-radius: 5px 5px 0 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 20px;
+  gap: 40px;
+}
+
+/* Laptop */
+.laptop {
+  position: relative;
+}
+
+.screen {
+  width: 140px;
+  height: 90px;
+  background: linear-gradient(180deg, #1a1a2e 0%, #0d0d1a 100%);
+  border: 4px solid #333;
+  border-radius: 5px 5px 0 0;
+  padding: 8px;
+  overflow: hidden;
+}
+
+.code-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.code-line {
+  height: 6px;
+  background: linear-gradient(90deg, #4ade80 0%, #22c55e 50%, transparent 100%);
+  border-radius: 2px;
+  animation: code-type 2s ease-in-out infinite;
+}
+
+@keyframes code-type {
+  0%, 100% { opacity: 0.5; width: 30%; }
+  50% { opacity: 1; width: 80%; }
+}
+
+.keyboard {
+  width: 150px;
+  height: 8px;
+  background: linear-gradient(180deg, #444 0%, #333 100%);
+  border-radius: 0 0 3px 3px;
+}
+
+/* Coffee mug */
+.coffee-mug {
+  position: relative;
+  width: 50px;
+  height: 55px;
+  background: #e8dcc8;
+  border-radius: 0 0 15px 15px;
+  margin-top: 35px;
+}
+
+.coffee-mug::before {
+  content: '';
+  position: absolute;
+  right: -15px;
+  top: 10px;
+  width: 18px;
+  height: 25px;
+  border: 5px solid #e8dcc8;
+  border-left: none;
+  border-radius: 0 15px 15px 0;
+}
+
+.coffee-mug::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  height: 12px;
+  background: #4a2f1a;
+  border-radius: 50%;
+}
+
+/* Steam from coffee */
+.steam {
+  position: absolute;
+  width: 10px;
+  height: 25px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  top: -30px;
+  animation: steam-rise 2.5s ease-in-out infinite;
+}
+
+.s1 { left: 8px; animation-delay: 0s; }
+.s2 { left: 20px; animation-delay: 0.6s; }
+.s3 { left: 32px; animation-delay: 1.2s; }
+
+@keyframes steam-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scaleX(1);
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-25px) scaleX(1.8);
+  }
+}
+
+/* Candle */
+.candle {
+  position: relative;
+  width: 20px;
+  height: 40px;
+  background: linear-gradient(180deg, #f5e6d3 0%, #e8d4b8 100%);
+  border-radius: 3px;
+  margin-top: 50px;
+}
+
+.flame {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 20px;
+  background: linear-gradient(180deg, #ffcc33 0%, #ff9933 50%, #ff6600 100%);
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  animation: flame-dance 0.5s ease-in-out infinite alternate;
+  box-shadow: 0 0 20px rgba(255, 150, 50, 0.8),
+              0 0 40px rgba(255, 100, 0, 0.4);
+}
+
+@keyframes flame-dance {
+  0% { transform: translateX(-50%) scaleY(1) rotate(-2deg); }
+  100% { transform: translateX(-50%) scaleY(1.1) rotate(2deg); }
+}
+
+/* Cat */
+.cat {
+  position: absolute;
+  bottom: 180px;
+  left: 200px;
+}
+
+.cat-body {
+  width: 60px;
+  height: 35px;
+  background: #3d3d3d;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+}
+
+.cat-head {
+  position: absolute;
+  top: -15px;
+  left: 35px;
+  width: 30px;
+  height: 25px;
+  background: #3d3d3d;
+  border-radius: 50%;
+}
+
+.ear {
+  position: absolute;
+  top: -8px;
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 12px solid #3d3d3d;
+}
+
+.ear.left { left: 2px; transform: rotate(-15deg); }
+.ear.right { right: 2px; transform: rotate(15deg); }
+
+.cat-face::before,
+.cat-face::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  width: 4px;
+  height: 4px;
+  background: #ffd700;
+  border-radius: 50%;
+  animation: cat-blink 4s ease-in-out infinite;
+}
+
+.cat-face::before { left: 8px; }
+.cat-face::after { right: 8px; }
+
+@keyframes cat-blink {
+  0%, 90%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.1); }
+}
+
+.cat-tail {
+  position: absolute;
+  bottom: 5px;
+  left: -20px;
+  width: 30px;
+  height: 8px;
+  background: #3d3d3d;
+  border-radius: 10px 0 0 10px;
+  transform-origin: right center;
+  animation: tail-wag 3s ease-in-out infinite;
+}
+
+@keyframes tail-wag {
+  0%, 100% { transform: rotate(-10deg); }
+  50% { transform: rotate(10deg); }
+}
+
+/* Hanging plant */
+.hanging-plant {
+  position: absolute;
+  top: 0;
+  right: 280px;
+}
+
+.hanging-plant .pot {
+  width: 40px;
+  height: 30px;
+  background: #c4785a;
+  border-radius: 0 0 10px 10px;
+  margin: 0 auto;
+}
+
+.vine {
+  position: absolute;
+  top: 25px;
+  width: 4px;
+  background: #4a7c59;
+  border-radius: 0 0 5px 5px;
+  animation: vine-sway 4s ease-in-out infinite;
+}
+
+.v1 { left: 5px; height: 60px; animation-delay: 0s; }
+.v2 { left: 18px; height: 80px; animation-delay: 0.5s; }
+.v3 { left: 31px; height: 50px; animation-delay: 1s; }
+
+.vine::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: -6px;
+  width: 16px;
+  height: 10px;
+  background: #5a9c6a;
+  border-radius: 50%;
+}
+
+@keyframes vine-sway {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+
+/* Info overlay */
+.info {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  color: rgba(255, 235, 205, 0.9);
+  z-index: 20;
+}
+
+.title {
+  font-size: 18px;
+  letter-spacing: 2px;
+  margin-bottom: 15px;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+/* Equalizer bars - warm colors */
+.equalizer {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  height: 30px;
+  align-items: flex-end;
+}
+
+.equalizer span {
+  width: 6px;
+  background: linear-gradient(180deg, #ffcc66, #ff9933);
+  border-radius: 3px;
+  animation: eq 0.8s ease-in-out infinite;
+}
+
+.equalizer span:nth-child(1) { animation-delay: 0.0s; }
+.equalizer span:nth-child(2) { animation-delay: 0.1s; }
+.equalizer span:nth-child(3) { animation-delay: 0.2s; }
+.equalizer span:nth-child(4) { animation-delay: 0.3s; }
+.equalizer span:nth-child(5) { animation-delay: 0.4s; }
+
+@keyframes eq {
+  0%, 100% { height: 10px; }
+  50% { height: 25px; }
+}
+
+/* Warm vignette */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at center, transparent 30%, rgba(20, 10, 5, 0.6) 100%);
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Ambient warm glow */
+.coffee-shop::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(255, 200, 100, 0.1) 0%, transparent 70%);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
