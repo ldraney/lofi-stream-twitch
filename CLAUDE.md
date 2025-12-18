@@ -24,12 +24,12 @@ Twitch Live (RTMP ingest)
 ## Definition of Done
 
 The project is complete when:
-- [ ] Twitch live stream is running 24/7
-- [ ] Stream displays the coffee shop lofi page with visuals
-- [ ] Audio is playing (generative jazz lofi via Web Audio API)
-- [ ] Stream auto-recovers from crashes (systemd Restart=always)
+- [x] Twitch live stream is running 24/7
+- [x] Stream displays the coffee shop lofi page with visuals
+- [x] Audio is playing (generative jazz lofi via Web Audio API)
+- [x] Stream auto-recovers from crashes (systemd Restart=always)
 - [ ] Discord alerts on failures
-- [ ] Minimal maintenance required
+- [x] Minimal maintenance required
 
 ---
 
@@ -69,8 +69,8 @@ lofi-stream-twitch/
 ## Useful Commands
 
 ```bash
-# SSH to server
-ssh -i ~/api-secrets/hetzner-twitch/id_ed25519 root@YOUR_SERVER_IP
+# SSH to server (shared with YouTube stream)
+ssh -i ~/api-secrets/hetzner-server/id_ed25519 root@5.78.42.22
 
 # Check stream status
 systemctl status lofi-stream-twitch
@@ -81,19 +81,35 @@ journalctl -u lofi-stream-twitch -f
 # Restart stream
 systemctl restart lofi-stream-twitch
 
-# Check RTMP connection
+# Check RTMP connection (both streams)
 ss -tn | grep 1935
 
 # Monitor resources
 top -bn1 | head -15 && free -h
+
+# Take screenshot of Twitch display
+ffmpeg -y -f x11grab -video_size 1280x720 -i :98 -frames:v 1 -update 1 /tmp/twitch_screenshot.png
 ```
 
 ## Current Status
 
-**Phase:** Development
-**GitHub Pages:** https://ldraney.github.io/lofi-stream-twitch/ (pending deployment)
-**Server:** Not yet provisioned
-**Twitch:** Not yet streaming
+**Phase:** Production - Live and streaming!
+**GitHub Pages:** https://ldraney.github.io/lofi-stream-twitch/
+**Server:** 5.78.42.22 (shared with YouTube stream, systemd enabled)
+**Twitch:** Live with video and audio!
+
+### Dual-Stream Setup
+
+Both YouTube and Twitch streams run on the same VPS:
+
+| Stream | Display | Audio Sink | Service |
+|--------|---------|------------|---------|
+| YouTube | :99 | virtual_speaker | lofi-stream |
+| Twitch | :98 | twitch_speaker | lofi-stream-twitch |
+
+**Resource usage (dual-stream on CX22):**
+- CPU: ~70%
+- RAM: ~1.2GB / 1.9GB (65%)
 
 ---
 
@@ -167,3 +183,24 @@ PULSE_SERVER=unix:/run/user/0/pulse/native ffmpeg \
 # Verify ffmpeg is actually connected to PulseAudio
 pactl list source-outputs  # Should show ffmpeg as client
 ```
+
+### Chromium Session Reuse (Dual-Stream Issue)
+
+**Problem:** When running two streams, Twitch Chromium showed black screen while audio worked.
+
+**Symptoms:**
+- `chromium-browser` command returned "Opening in existing browser session"
+- Twitch's display :98 was empty (just X cursor)
+- YouTube stream on :99 worked fine
+
+**Root Cause:** Chromium snap detects existing sessions and opens new tabs in the running instance instead of starting fresh. Both streams were sharing YouTube's Chromium on :99.
+
+**Fix:** Add `--user-data-dir` flag to force separate browser instances:
+```bash
+chromium-browser \
+    --user-data-dir=/tmp/chromium-twitch \
+    --no-sandbox \
+    ...
+```
+
+**Key Insight:** Each concurrent Chromium instance needs its own user data directory to prevent session sharing.
