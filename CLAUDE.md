@@ -2,6 +2,16 @@
 
 Stream a cozy coffee shop lofi HTML page from GitHub Pages to Twitch Live via a Hetzner VPS.
 
+## Secrets
+
+```bash
+# Stream key and RTMP URL
+cat ~/api-secrets/lofi-stream/platforms/twitch.env
+
+# SSH key for servers
+~/api-secrets/hetzner-server/id_ed25519
+```
+
 ## Project Goal
 
 A 24/7 Twitch live stream displaying a coffee shop themed lofi page with ambient visuals and jazzy lofi music.
