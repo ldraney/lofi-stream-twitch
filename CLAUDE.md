@@ -12,7 +12,7 @@ A 24/7 Twitch live stream displaying a coffee shop themed lofi page with ambient
 GitHub Pages (static HTML)
         │
         ▼
-Hetzner VPS (CX22 ~€4.50/mo)
+Hetzner VPS (CPX62 ~$42.99/mo)
   ├── Xvfb (virtual display)
   ├── Chromium (renders page)
   └── ffmpeg (captures + RTMP stream)
@@ -70,8 +70,8 @@ lofi-stream-twitch/
 ## Useful Commands
 
 ```bash
-# SSH to server (shared with YouTube stream)
-ssh -i ~/api-secrets/hetzner-server/id_ed25519 root@5.78.42.22
+# SSH to production server (shared with YouTube stream)
+ssh -i ~/api-secrets/hetzner-server/id_ed25519 root@135.181.150.82
 
 # Check stream status
 systemctl status lofi-stream-twitch
@@ -120,25 +120,28 @@ make dev-logs
 
 **Dev server resets daily at 4 AM UTC** - any deployments will be cleaned up automatically.
 
+## Infrastructure
+
+| Server | IP | Purpose | Cost |
+|--------|-----|---------|------|
+| Production (CPX62) | 135.181.150.82 | Live streams | $42.99/mo |
+| Dev (CX22) | 5.78.42.22 | Testing | €4.50/mo |
+
 ## Current Status
 
 **Phase:** Production - Live and streaming!
 **GitHub Pages:** https://ldraney.github.io/lofi-stream-twitch/
-**Server:** 5.78.42.22 (shared with YouTube stream, systemd enabled)
+**Production Server:** 135.181.150.82 (shared with YouTube stream, systemd enabled)
 **Twitch:** Live with video and audio!
 
 ### Dual-Stream Setup
 
-Both YouTube and Twitch streams run on the same VPS:
+Both YouTube and Twitch streams run on the same production VPS:
 
 | Stream | Display | Audio Sink | Service |
 |--------|---------|------------|---------|
 | YouTube | :99 | virtual_speaker | lofi-stream |
 | Twitch | :98 | twitch_speaker | lofi-stream-twitch |
-
-**Resource usage (dual-stream on CX22):**
-- CPU: ~70%
-- RAM: ~1.2GB / 1.9GB (65%)
 
 ---
 
@@ -233,3 +236,25 @@ chromium-browser \
 ```
 
 **Key Insight:** Each concurrent Chromium instance needs its own user data directory to prevent session sharing.
+
+### Audio Sink Routing (Dual-Stream Issue)
+
+**Problem:** Twitch stream had no audio, even though Chromium was playing audio.
+
+**Symptoms:**
+- `twitch_speaker` sink was IDLE
+- `virtual_speaker` (YouTube's sink) was RUNNING
+- Twitch Chromium audio was going to wrong sink
+
+**Root Cause:** When running multiple streams, PulseAudio may route new Chromium instances to an existing sink instead of the intended one. The stream script's `pactl move-sink-input` command failed to find the correct sink input.
+
+**Fix:** Manually move the sink input:
+```bash
+# Find Chromium's sink input
+pactl list sink-inputs | grep -E 'Sink Input|Sink:|application.name'
+
+# Move to correct sink
+pactl move-sink-input <INPUT_NUMBER> twitch_speaker
+```
+
+**Key Insight:** Always verify audio routing with `pactl list sinks short` - the correct sink should show RUNNING, not IDLE.
