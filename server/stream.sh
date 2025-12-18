@@ -54,13 +54,14 @@ pactl load-module module-null-sink sink_name=$SINK_NAME sink_properties=device.d
 # Export PULSE_SERVER for ffmpeg (critical for audio capture!)
 export PULSE_SERVER=unix:$XDG_RUNTIME_DIR/pulse/native
 
-# Start Chromium
+# Start Chromium with separate user data dir (prevents reusing YouTube session)
 echo "Starting Chromium..."
 chromium-browser \
     --no-sandbox \
     --disable-gpu \
     --disable-software-rasterizer \
     --disable-dev-shm-usage \
+    --user-data-dir=/tmp/chromium-twitch \
     --kiosk \
     --autoplay-policy=no-user-gesture-required \
     --window-size=1280,720 \
