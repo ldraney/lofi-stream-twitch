@@ -1,49 +1,47 @@
 #!/bin/bash
-# Quick status check for Lofi Stream Twitch
-# Run from local machine
+# Quick status check for lofi-stream-twitch
+# Usage: ./status.sh
 
-# Configuration - update these for your server
-KEY="${TWITCH_SSH_KEY:-~/api-secrets/hetzner-twitch/id_ed25519}"
-HOST="${TWITCH_SERVER:-root@YOUR_SERVER_IP}"
+KEY=~/api-secrets/hetzner-server/id_ed25519
+PROD_HOST=root@135.181.150.82
 
-echo "🎵 Lofi Stream Twitch Status"
-echo "============================"
+echo "Lofi Stream Twitch Status"
+echo "========================="
 echo ""
 
-# Check if we can connect to server
-if [ "$HOST" = "root@YOUR_SERVER_IP" ]; then
-    echo "⚠️  Server not configured. Set TWITCH_SERVER env var or edit this script."
-    echo ""
-else
-    echo "📡 Server ($HOST):"
-    ssh -i "$KEY" -o ConnectTimeout=5 "$HOST" '
-        if pgrep -f "ffmpeg.*twitch" > /dev/null; then
-            echo "  ✓ ffmpeg: streaming"
-        else
-            echo "  ✗ ffmpeg: NOT running"
-        fi
+# Server status
+echo "Production Server (135.181.150.82):"
+ssh -i $KEY -o ConnectTimeout=5 $PROD_HOST '
+  echo "  Service: $(systemctl is-active lofi-stream-twitch)"
 
-        if pgrep -f "chromium.*lofi-stream-twitch" > /dev/null; then
-            echo "  ✓ chromium: running"
-        else
-            echo "  ✗ chromium: NOT running"
-        fi
+  if pgrep -f "ffmpeg.*twitch" > /dev/null; then
+    echo "  ffmpeg: streaming"
+  else
+    echo "  ffmpeg: NOT RUNNING"
+  fi
 
-        CPU=$(top -bn1 | grep "Cpu(s)" | awk "{print \$2}")
-        MEM=$(free | awk "/^Mem:/ {printf \"%.0f\", \$3/\$2 * 100}")
-        echo "  📊 CPU: ${CPU}% | RAM: ${MEM}%"
-    ' 2>/dev/null || echo "  ✗ Cannot connect to server"
-    echo ""
-fi
+  if pgrep -f "Xvfb :98" > /dev/null; then
+    echo "  Display :98: running"
+  else
+    echo "  Display :98: NOT RUNNING"
+  fi
 
-# Check GitHub Pages
-echo "🌐 GitHub Pages:"
+  CPU=$(top -bn1 | grep "Cpu(s)" | awk "{printf \"%.0f\", \$2}")
+  MEM=$(free | awk "/^Mem:/ {printf \"%.0f\", \$3/\$2*100}")
+  echo "  CPU: ${CPU}% | RAM: ${MEM}%"
+' 2>/dev/null || echo "  Cannot connect to server"
+
+echo ""
+
+# GitHub Pages
+echo "GitHub Pages:"
 if curl -s --max-time 5 https://ldraney.github.io/lofi-stream-twitch/ | grep -q "lofi"; then
-    echo "  ✓ https://ldraney.github.io/lofi-stream-twitch/ is UP"
+  echo "  https://ldraney.github.io/lofi-stream-twitch/ is UP"
 else
-    echo "  ✗ GitHub Pages not accessible (may not be deployed yet)"
+  echo "  Page not accessible"
 fi
-echo ""
 
-echo "📺 Twitch: Check your channel manually"
-echo "   https://www.twitch.tv/YOUR_CHANNEL"
+echo ""
+echo "Twitch: Check your channel dashboard"
+echo ""
+echo "For full health check: ssh $PROD_HOST '/opt/scripts/check-streams.sh'"
